@@ -1,12 +1,19 @@
 package com.studio21.mobile.alpha_maraicher;
 
+import java.util.concurrent.ExecutionException;
+
+import com.studio21.mobile.helper.JsonDataDownloadTask;
+
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 
 /**
@@ -33,6 +40,7 @@ public class EmployeeListActivity extends FragmentActivity
      * device.
      */
     private boolean mTwoPane;
+    private final String TAG = "Alpha-Maraicher-Log";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +62,27 @@ public class EmployeeListActivity extends FragmentActivity
         }
 
         // TODO: If exposing deep links into your app, handle intents here.
+        if(isConnected())
+        {	
+        	try 
+        	{
+        		AsyncTask response = new JsonDataDownloadTask().execute("http://bestmartialartsquotes.com/Quotes/Employees");
+				String temp = response.get().toString();
+				sendToast(temp);
+			} 
+        	catch (InterruptedException ie) 
+        	{
+				Log.e(TAG, ie.getMessage());
+			} 
+        	catch (ExecutionException ee) 
+        	{
+        		Log.e(TAG, ee.getMessage());
+			}
+        }
+        else
+        {
+        	sendToast("No connection");
+        }
     }
 
     /**
@@ -83,8 +112,9 @@ public class EmployeeListActivity extends FragmentActivity
         }
     }
     
-    private boolean isConnected(View view) 
+    private boolean isConnected() 
 	{	
+    	Log.d(TAG, "Checking if connected");
 	    ConnectivityManager connMgr = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
 	    NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
 	    if (networkInfo != null && networkInfo.isConnected()) 
@@ -96,4 +126,12 @@ public class EmployeeListActivity extends FragmentActivity
 	        return false;
 	    }
 	}
+    
+    private void sendToast(String message)
+    {
+    	Context context = getApplicationContext();
+    	int duration = Toast.LENGTH_LONG;
+    	Toast toast = Toast.makeText(context, message, duration);
+    	toast.show();
+    }
 }
